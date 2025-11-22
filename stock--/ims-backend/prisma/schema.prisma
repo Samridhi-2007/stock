@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  password      String
+  name          String?
+  role          String          @default("user") // 'user' or 'admin'
+  isActive      Boolean         @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  stockMovements StockMovement[]
+  receipts      Receipt[]
+}
+
+model Product {
+  id            String           @id @default(uuid())
+  name          String
+  description   String?
+  sku           String           @unique
+  barcode       String?
+  price         Float            @default(0)
+  cost          Float            @default(0)
+  currentStock  Int              @default(0)
+  reorderLevel  Int              @default(10)
+  category      String?
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  stockMovements StockMovement[]
+  receiptLines   ReceiptLine[]
+}
+
+model Warehouse {
+  id            String            @id @default(uuid())
+  name          String
+  code          String            @unique
+  location      String?
+  description   String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  stockMovements StockMovement[]
+  receipts      Receipt[]
+}
+
+model Receipt {
+  id            String    @id @default(uuid())
+  reference     String    @unique
+  warehouseId   String
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+  /// Status can be: 'draft', 'completed', or 'cancelled'
+  status        String    @default("draft")
+  notes         String?
+  receivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String
+  user          User      @relation(fields: [createdBy], references: [id])
+  receiptLines  ReceiptLine[]
+}
+
+model ReceiptLine {
+  id            String    @id @default(uuid())
+  receiptId     String
+  receipt       Receipt   @relation(fields: [receiptId], references: [id])
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id])
+  quantity      Int
+  receivedQty   Int       @default(0)
+  unitPrice     Float
+  notes         String?
+  createdAt     DateTime  @default(now())
+}
+
+model StockMovement {
+  id            String    @id @default(uuid())
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id])
+  warehouseId   String
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+  quantity      Int
+  movementType  String    // 'in', 'out', 'transfer', 'adjustment'
+  referenceId   String?   // ID of the related document (receipt, delivery, etc.)
+  referenceType String?   // 'receipt', 'delivery', 'transfer', 'adjustment'
+  notes         String?
+  createdAt     DateTime  @default(now())
+  createdById   String
+  createdBy     User      @relation(fields: [createdById], references: [id])
+}
