@@ -37,7 +37,7 @@ A full-stack inventory management system built with modern web technologies.
 
 ## 🚀 Quick Start
 
-### Backend Setup
+### Setup
 ```bash
 cd ims-backend
 npm install
