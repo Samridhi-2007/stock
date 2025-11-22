@@ -45,3 +45,14 @@ cp .env.example .env
 # Edit .env with your database credentials
 npx prisma migrate dev --name init
 npm run dev
+
+### Frontend Setup
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+📂 Project Structure
+stock--/
+├── ims-backend/          # Backend server (Node.js + Express)
+└── frontend/             # Frontend (React + TypeScript)
